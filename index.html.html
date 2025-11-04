@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Tower of Hanoi - Kue Manis!</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: linear-gradient(135deg, #0096c0 0%, #384673 50%, #a300b1 100%); /* Gradasi pastel seperti frosting */
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            position: relative;
+            overflow: auto; /* Diubah dari hidden ke auto agar bisa scroll */
+        }
+        /* Partikel confetti seperti sprinkles */
+        .confetti {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: radial-gradient(circle, #ff6b6b, #ffa500);
+            border-radius: 50%;
+            animation: fall 3s linear infinite;
+            z-index: 10;
+        }
+        @keyframes fall {
+            0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+        }
+
+        h1 {
+            background: linear-gradient(45deg, #009dff, #0059ff, #ea00ff); /* Gradasi pastel pada judul */
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 0 6px 8px rgba(0,0,0,0.3);
+        }
+        p {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+        }
+        .tower {
+            display: inline-block;
+            width: 150px;
+            height: 300px;
+            border: 3px solid #fff;
+            margin: 20px;
+            position: relative;
+            background: linear-gradient(to bottom, #7591b4 0%, #5a5b9a 100%); /* Gradasi tiang seperti cake stand */
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .tower:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+        .disk {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 35px; /* Lebih tinggi untuk bentuk kue */
+            border-radius: 20px 20px 10px 10px; /* Bentuk seperti cupcake: atas lebar, bawah sempit */
+            text-align: center;
+            line-height: 35px;
+            font-weight: bold;
+            color: #333;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+        }
+        .disk:hover {
+            transform: scale(1.1);
+            animation: wiggle 0.5s infinite;
+        }
+        @keyframes wiggle {
+            0%, 100% { transform: scale(1.1) rotate(0deg); }
+            25% { transform: scale(1.1) rotate(-2deg); }
+            75% { transform: scale(1.1) rotate(2deg); }
+        }
+        .disk1 { 
+            background: linear-gradient(to bottom, #9ae7ff, #f3cffe); /* Gradasi frosting pink */
+            width: 60px; left: 45px; 
+        }
+        .disk1::after { content: '🍓'; } /* Topping strawberry */
+        .disk2 { 
+            background: linear-gradient(to bottom, #b5a8ed, #d6e7fe); /* Gradasi frosting aqua */
+            width: 80px; left: 35px; 
+        }
+        .disk2::after { content: '🍬'; } /* Topping candy */
+        .disk3 { 
+            background: linear-gradient(to bottom, #ffd2f8, #ad9ffc); /* Gradasi frosting peach */
+            width: 100px; left: 25px; 
+        }
+        .disk3::after { content: '🧁'; } /* Topping cupcake */
+        .disk4 { 
+            background: linear-gradient(to bottom, #b199d2, #d7e6fe); /* Gradasi frosting lavender */
+            width: 120px; left: 15px; 
+        }
+        .disk4::after { content: '🍪'; } /* Topping cookie */
+        .disk5 { 
+            background: linear-gradient(to bottom, #f093fb, #5777f5); /* Gradasi frosting rose */
+            width: 140px; left: 5px; 
+        }
+        .disk5::after { content: '🎂'; } /* Topping cake */
+        button {
+            margin: 10px;
+            padding: 12px 25px;
+            font-size: 16px;
+            background: linear-gradient(45deg, #9ad5ff, #eecffe); /* Gradasi tombol seperti frosting */
+            color: #333;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+        }
+        #moves {
+            font-size: 18px;
+            margin-top: 20px;
+            background: linear-gradient(45deg, #a8edea, #fed6e3); /* Gradasi teks langkah */
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: bold;
+        }
+        .selected {
+            border-color: #ffeb3b !important; /* Highlight saat dipilih */
+            box-shadow: 0 0 20px #ffeb3b;
+        }
+    </style>
+</head>
+<body>
+    <!-- Partikel confetti -->
+    <div class="confetti" style="left: 10%; animation-delay: 0s;"></div>
+    <div class="confetti" style="left: 20%; animation-delay: 1s;"></div>
+    <div class="confetti" style="left: 30%; animation-delay: 2s;"></div>
+    <div class="confetti" style="left: 40%; animation-delay: 0.5s;"></div>
+    <div class="confetti" style="left: 50%; animation-delay: 1.5s;"></div>
+    <div class="confetti" style="left: 60%; animation-delay: 2.5s;"></div>
+    <div class="confetti" style="left: 70%; animation-delay: 0.8s;"></div>
+    <div class="confetti" style="left: 80%; animation-delay: 1.8s;"></div>
+    <div class="confetti" style="left: 90%; animation-delay: 2.2s;"></div>
+
+    <h1>Game Tower of Hanoi By Kelompok 3</h1>
+    <p>Gunakan struktur data stack untuk memindahkan kue dari tiang kiri ke tiang kanan. Kue yang lebih besar tidak boleh di atas kue yang lebih kecil. Klik tiang untuk memilih, lalu klik lagi untuk memindahkan.</p>
+    
+    <div id="game">
+        <div class="tower" id="tower1" onclick="selectTower(1)">
+            <div class="disk disk5" id="disk5"></div>
+            <div class="disk disk4" id="disk4"></div>
+            <div class="disk disk3" id="disk3"></div>
+            <div class="disk disk2" id="disk2"></div>
+            <div class="disk disk1" id="disk1"></div>
+        </div>
+        <div class="tower" id="tower2" onclick="selectTower(2)"></div>
+        <div class="tower" id="tower3" onclick="selectTower(3)"></div>
+    </div>
+    
+    <div id="moves">Langkah: 0</div>
+    <button onclick="resetGame()">Reset Game</button>
+    
+    <script>
+        let towers = [[5, 4, 3, 2, 1], [], []]; // Stack untuk setiap tiang (array sebagai stack)
+        let selectedTower = null;
+        let moves = 0;
+
+        function selectTower(towerIndex) {
+            if (selectedTower === null) {
+                // Pilih tiang sumber
+                if (towers[towerIndex - 1].length > 0) {
+                    selectedTower = towerIndex;
+                    document.getElementById('tower' + towerIndex).classList.add('selected');
+                }
+            } else {
+                // Pindahkan ke tiang tujuan
+                if (selectedTower !== towerIndex) {
+                    const source = towers[selectedTower - 1];
+                    const target = towers[towerIndex - 1];
+                    
+                    if (source.length > 0 && (target.length === 0 || source[source.length - 1] < target[target.length - 1])) {
+                        const disk = source.pop();
+                        target.push(disk);
+                        moves++;
+                        updateDisplay();
+                        checkWin();
+                        // Efek suara seperti "pop" kue
+                        playSound();
+                    }
+                }
+                // Reset seleksi
+                document.getElementById('tower' + selectedTower).classList.remove('selected');
+                selectedTower = null;
+            }
+        }
+
+        function updateDisplay() {
+            for (let i = 0; i < 3; i++) {
+                const tower = document.getElementById('tower' + (i + 1));
+                tower.innerHTML = '';
+                for (let j = 0; j < towers[i].length; j++) {
+                    const disk = document.createElement('div');
+                    disk.className = 'disk disk' + towers[i][j];
+                    disk.id = 'disk' + towers[i][j];
+                    disk.style.bottom = (j * 35) + 'px'; // Sesuaikan tinggi
+                    tower.appendChild(disk);
+                }
+            }
+            document.getElementById('moves').textContent = 'Langkah: ' + moves;
+        }
+
+        function checkWin() {
+            if (towers[2].length === 5) {
+                // Tambah confetti saat menang
+                for (let i = 0; i < 20; i++) {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.animationDelay = Math.random() * 3 + 's';
+                    document.body.appendChild(confetti);
+                    setTimeout(() => confetti.remove(), 3000);
+                }
+                alert('Selamat! Anda menang dalam ' + moves + ' langkah. Nikmati kue Anda! 🎂');
+            }
+        }
+
+        function resetGame() {
+            towers = [[5, 4, 3, 2, 1], [], []];
+            selectedTower = null;
+            moves = 0;
+            updateDisplay();
+        }
+
+        function playSound() {
+            if (window.AudioContext || window.webkitAudioContext) {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
+                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.2);
+            }
+        }
+
+        // Inisialisasi tampilan
+        updateDisplay();
+    </script>
+</body>
+</html>
